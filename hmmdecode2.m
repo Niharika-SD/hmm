@@ -60,6 +60,8 @@ function [pStates,pSeq, fs, bs, s] = hmmdecode2(seq,tr,e,varargin)
 
 % tr must be square
 
+
+% A small modification to deal with 0 values in log
 min = 1e-10; % choose a small non-zero value
 tr ( tr < min) = min;
 e ( e < min) = min; 

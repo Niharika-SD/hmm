@@ -37,6 +37,7 @@ for i = 1: size(data_test,2)
     test_set = vertcat(test_set,norm_data_test{i}');
     ct_test(i) = size(norm_data_test{i},2);
 end
+save('data.mat')
 
 %% K means and encoding
 
@@ -69,7 +70,7 @@ save('encoded_values.mat','encoded_train','encoded_test')
 %% HMM training 
 
 %Initial conditions
-n_states =3;
+n_states =4;
 
 for i= 0:9
     
@@ -85,29 +86,11 @@ for i= 0:9
         seq{j}(:,:) = encoded_train{idx(j)};
     end
     
-    [hmm_model{i+1}.TPM,hmm_model{i+1}.EMM] = hmmtrain(seq,TPM_guess,EM_guess,'MAXITERATIONS',1000);
+    [hmm_model{i+1}.TPM,hmm_model{i+1}.EMM] = hmmtrain(seq,TPM_guess,EM_guess,'MAXITERATIONS',250,'Tolerance',10e-04);
     
 end
 
-save('hmm_models.mat','hmm_model')
+str = strcat('hmm_models',num2str(n_states),'.mat');
+save(str,'hmm_model')
 %% HMM prediction
 
-acc = 0;
-for i  = 1:size(data_test,2)
-    
-    log_prob = zeros([10,1]);
-    test_seq =  encoded_test{i};
-    
-    for j = 1:10
-       [~,logpseq] = hmmdecode2(test_seq,hmm_model{j}.TPM,hmm_model{j}.EMM); 
-       log_prob(j) = logpseq;
-    end
-    
-    ind_max = find(log_prob == max(log_prob));
-    
-    if (ind_max == label_test(i)+1)
-        acc = acc+1;
-    end
-end
-
-fprintf('%f',acc/size(data_test,2))
